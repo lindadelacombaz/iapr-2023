@@ -213,11 +213,6 @@ def save_tiles(image_index, folder_image = "train2", folder ="tiles", path = "da
     md = segment_image_canny(im)
     res = apply_mat_morph(md)
     _, _, _, tiles = get_contours(im, res)
-    # Crop the tiles to remove the black borders and resize them to 128x128 pixels:
-    for i, tile in enumerate(tiles):
-        tile = tile[3:tile.shape[0]-3, 3:tile.shape[1]-3]
-        tile = cv2.resize(tile, (128, 128))
-        tiles[i] = tile
     num_tiles = len(tiles)
     print("Number of tiles: {}".format(num_tiles))
     # Extract the tiles as 128x128 images and save them in folder "tiles" in .png format:
@@ -294,7 +289,7 @@ def cluster(feature_maps, n_clusters=4):
     centroids = kmeans.cluster_centers_
     return labels, centroids
 
-def plot_clusters(labels, tiles_original):
+def plot_clusters(image_number, labels, tiles_original):
     """ This functions retrieve the tiles images according to their cluster label and plot them in a subplot"""
     # create a list of tiles for each cluster:
     clusters = []
@@ -308,11 +303,13 @@ def plot_clusters(labels, tiles_original):
             axes.imshow(clusters[i][0])
             axes.set_title(f'Cluster {i}')
             axes.set_axis_off()
+            print("Image {}".format(image_number))
         else :
             for j, ax in enumerate(axes.flatten()):
                 ax.imshow(clusters[i][j])
                 # ax.imshow(cv2.cvtColor(clusters[i][j], cv2.COLOR_RGB2GRAY), cmap='gray')
                 ax.set_title(f'Cluster {i}')
                 ax.set_axis_off()
+            print("Image {}".format(image_number))
             plt.show()
     return clusters
