@@ -300,6 +300,8 @@ def plot_clusters(image_number, labels, tiles_original):
         fig, axes = plt.subplots(1, len(clusters[i]), figsize=(15, 5))
         if len(clusters[i]) == 1:
             # axes.imshow(cv2.cvtColor(clusters[i][0], cv2.COLOR_RGB2GRAY))
+            # Move clusters[i] at the end of the list:
+            clusters[i].append(clusters[i].pop(0))
             axes.imshow(clusters[i][0])
             axes.set_title(f'Cluster {i}')
             axes.set_axis_off()
