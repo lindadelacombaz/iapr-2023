@@ -359,14 +359,21 @@ def plot_clusters(image_number, labels, tiles_original):
 
 def get_puzzle(img_sep):
     # put all the tiles in a single numpy array based on the size
-    num_rows = num_cols = 0
+    num_rows = len(img_sep)
+    num_cols = 1
     if len(img_sep) == 9:
         num_rows = num_cols = 3
+        img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
     elif len(img_sep)==12:
         num_rows = 4
         num_cols = 3
+        img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
     elif len(img_sep)==16:
         num_rows = num_cols = 4
-    # concatenate the tiles based on the number of rows and columns:
-    img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
+        # concatenate the tiles based on the number of rows and columns:
+        img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
+    elif len(img_sep)>16:
+        num_rows = 4
+        num_cols = len(img_sep)//4
+        img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
     return img_sep
