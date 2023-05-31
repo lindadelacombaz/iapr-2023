@@ -21,7 +21,7 @@ def export_solutions(image_index , solutions , path = "data_project"  , group_id
         
         solutions [1] = matrix containing the features of the puzzles. If there were N pieces in the puzzle, and you extracted M Features per puzzle piece, then the feature map should be of size N x M
 
-        solutions [2] =  list of lists of images, each list of images is a cluster of puzzle pieces. (it includes outliers as the last element of the list)
+        solutions [2] = list of lists of images, each list of images is a cluster of puzzle pieces. (it includes outliers as the last element of the list)
                         If there are k clusters, then the list should have k elements, each element is a list
                         e.g. 
 
@@ -30,9 +30,9 @@ def export_solutions(image_index , solutions , path = "data_project"  , group_id
                     solution [2] [2] =  [cluster2_piece0 , cluster2_piece1 ...]
                     ....
                     solution [2] [k]   =  [clusterk_piece0 , clusterk_piece1 ... ]
-                    solution [2] [k+1] = [ outlier_piece0, outlier_piece1 ...]
+                    solution [2] [k+1] = [outlier_piece0, outlier_piece1 ...]
                         
-    solutions [3] = list of images containing the puzzles
+        solutions [3] = list of images containing the puzzles
                     e.g.
                     solution [3] [0] =  solved_puzzle0 (image of 128*3 x 128*4)
                     solution [3] [1] =  solved_puzzle1 (image of 128*4 x 128*4)

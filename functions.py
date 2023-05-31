@@ -2,6 +2,7 @@
 from typing import Union
 from glob import glob
 import os 
+os.environ["OMP_NUM_THREADS"] = '1'
 
 # CLASSIC LIBRARIES:
 import numpy as np
@@ -118,7 +119,8 @@ def segment_image_canny(img):
     """
     # 1. Normalize the image:
     norm = cv2.normalize(img, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
-    # 1. Convert the image to grayscale:
+    
+    # We are finally not converting the image to grayscale:
     # train_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
     # 2. Filter the image with a Gaussian filter:
@@ -272,6 +274,36 @@ def feature_selection(feature_map):
 
     return feature_map
 
+def dimensionality_reduction(feature_maps):
+    """ Reduce the dimensionality of the feature maps using PCA and choose the best # of components based on the Elbow method. """
+    # flatten the feature maps:
+    #feature_maps = np.array(feature_maps)
+    feature_maps = feature_maps.reshape(feature_maps.shape[0], -1)
+    # standardize the data:
+    feature_maps = StandardScaler().fit_transform(feature_maps)
+    # apply PCA and plot the Elbow method to choose the number of components:
+    pca = PCA()
+    pca.fit(feature_maps)
+    #plt.plot(np.cumsum(pca.explained_variance_ratio_))
+    # plot the x where the cumulative explained variance is 70%:
+    #plt.axvline(x=np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.7)+1, c='r')
+    #plt.xlabel('number of components')
+    #plt.ylabel('cumulative explained variance')
+    #plt.show()
+    # print the number of components for which the cumulative explained variance is 70%:
+    #print("Number of components for 70% variance: {}".format(np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.7)+1))
+    # apply PCA with the chosen number of components:
+    n_components = np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.7)+1
+    pca = PCA(n_components=n_components)
+    pca.fit(feature_maps)
+    feature_maps = pca.transform(feature_maps)
+    # plot the results:
+    #plt.figure(figsize=(5, 5))
+    #plt.scatter(feature_maps[:, 0], feature_maps[:, 1], s=10)
+    #plt.xlabel('PC1')
+    #plt.ylabel('PC2')
+    #plt.show()    
+    return feature_maps
 
 """ CLUSTERING """
 
@@ -298,17 +330,23 @@ def plot_clusters(image_number, labels, tiles_original):
     clusters = []
     for i in range(len(np.unique(labels))):
         clusters.append([tiles_original[j] for j in range(len(tiles_original)) if labels[j] == i])
+    # Check if there are outliers:
+    for i in range(len(clusters)):
+        if len(clusters[i]) == 1:
+            # put the outlier as the last element of the list:
+            clusters.append(clusters[i])
+            clusters.pop(i)
+            break
     # plot a subplot of the tiles for each cluster:
     for i in range(len(clusters)):
         fig, axes = plt.subplots(1, len(clusters[i]), figsize=(15, 5))
         if len(clusters[i]) == 1:
             # axes.imshow(cv2.cvtColor(clusters[i][0], cv2.COLOR_RGB2GRAY))
-            # Move clusters[i] at the end of the list:
-            clusters[i].append(clusters[i].pop(0))
-            axes.imshow(clusters[i][0])
-            axes.set_title(f'Cluster {i}')
+            # show last cluster element of the list:
+            axes.imshow(clusters[-1][0])
+            axes.set_title(f'Outlier')
             axes.set_axis_off()
-            print("Image {}".format(image_number))
+            print("Outlier of Image {}".format(image_number))
         else :
             for j, ax in enumerate(axes.flatten()):
                 ax.imshow(clusters[i][j])
@@ -318,3 +356,17 @@ def plot_clusters(image_number, labels, tiles_original):
             print("Image {}".format(image_number))
             plt.show()
     return clusters
+
+def get_puzzle(img_sep):
+    # put all the tiles in a single numpy array based on the size
+    num_rows = num_cols = 0
+    if len(img_sep) == 9:
+        num_rows = num_cols = 3
+    elif len(img_sep)==12:
+        num_rows = 4
+        num_cols = 3
+    elif len(img_sep)==16:
+        num_rows = num_cols = 4
+    # concatenate the tiles based on the number of rows and columns:
+    img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
+    return img_sep
