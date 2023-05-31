@@ -24,6 +24,7 @@ from scipy import ndimage as ndi
 # SKLEARN:
 # import VarianceThreshold from sklearn:
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.decomposition import PCA
 
 # KMEANS:
 from sklearn.cluster import KMeans
@@ -110,6 +111,24 @@ def solve_and_export_puzzles_image(image_index , folder = "train2" , path = "dat
 
 """ IMAGE PROCESSING FUNCTIONS """
 
+# Segment the image using Canny edge detection:
+def segment_image_canny(img):
+    """
+    Segment the image to retrieve the tiles.
+    """
+    # 1. Normalize the image:
+    norm = cv2.normalize(img, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX)
+    # 1. Convert the image to grayscale:
+    # train_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
+    # 2. Filter the image with a Gaussian filter:
+    blur = cv2.GaussianBlur(norm, (5, 5), 0)
+
+    # 2. Apply Canny edge detection:
+    auto = cv2.Canny(blur, 35, 40)
+
+    return auto
+
 # Apply Morphologicals operators to fill the holes / get rid of the noise:
 def apply_mat_morph(mask):
     """
@@ -120,7 +139,7 @@ def apply_mat_morph(mask):
     #kernel_close =cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)) # close the mask
     #kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(5,5)) # open the mask
 
-    mask_dilate = cv2.dilate(mask.astype(np.uint8), kernel_dilate, iterations=3)
+    mask_dilate = cv2.dilate(mask.astype(np.uint8), kernel_dilate, iterations=2)
     #mask_erode = cv2.erode(mask_dilate, kernel_erode, iterations=7)
     #mask_open = cv2.morphologyEx(mask_erode, cv2.MORPH_OPEN, kernel_open, iterations=6)
     #mask_close = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel_close, iterations=6)
@@ -134,22 +153,6 @@ def apply_mat_morph(mask):
     mask_erode = binary_fill_holes(mask_close).astype(np.uint8)
 
     return mask_erode
-
-# Segment the image using Canny edge detection:
-def segment_image_canny(img):
-    """
-    Segment the image to retrieve the tiles.
-    """
-    # 1. Convert the image to grayscale:
-    train_gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
-    # # 2. Filter the image with a Gaussian filter:
-    # train_gray = cv2.GaussianBlur(train_gray, (5, 5), 0)
-
-    # 2. Apply Canny edge detection:
-    auto = cv2.Canny(train_gray, 35, 40)
-
-    return auto
 
 # Get the contours of the objects in the mask:
 def get_contours(img, mask):
