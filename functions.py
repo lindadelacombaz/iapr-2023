@@ -257,7 +257,7 @@ def compute_gabor_feats(image, kernels):
         feats[k, 7] = np.sum(spectrum**2)
     return feats
 
-# performs feature selection:
+# performs feature selection: HERE
 def feature_selection(feature_map):
     """This function selects the best features from the feature map."""
     # remove features that have low variance:
@@ -334,22 +334,33 @@ def plot_clusters(image_number, labels, tiles_original):
     for i in range(len(np.unique(labels))):
         clusters.append([tiles_original[j] for j in range(len(tiles_original)) if labels[j] == i])
     # Check if there are outliers:
+    flag = 0
     for i in range(len(clusters)):
-        if len(clusters[i]) == 1:
-            # put the outlier as the last element of the list:
-            clusters.append(clusters[i])
-            clusters.pop(i)
-            break
+        if len(clusters[i]) < 9:
+            if flag == 0:
+                # put the outlier as the last element of the list:
+                clusters.append(clusters[i])
+                clusters.pop(i)
+                flag =1
+                break
     # plot a subplot of the tiles for each cluster:
     for i in range(len(clusters)):
         fig, axes = plt.subplots(1, len(clusters[i]), figsize=(15, 5))
-        if len(clusters[i]) == 1:
+        if len(clusters[i]) < 9 and i == len(clusters)-1:
             # axes.imshow(cv2.cvtColor(clusters[i][0], cv2.COLOR_RGB2GRAY))
             # show last cluster element of the list:
-            axes.imshow(clusters[-1][0])
-            axes.set_title(f'Outlier')
-            axes.set_axis_off()
-            print("Outlier of Image {}".format(image_number))
+            if len(clusters[i]) == 1:
+                axes.imshow(clusters[i][0])
+                # axes.imshow(cv2.cvtColor(clusters[i][0], cv2.COLOR_RGB2GRAY), cmap='gray')
+                axes.set_title(f'Outlier of Image {image_number}')
+                axes.set_axis_off()
+            else: 
+                for j, ax in enumerate(axes):
+                    ax.imshow(clusters[i][j])
+                    # ax.imshow(cv2.cvtColor(clusters[i][j], cv2.COLOR_RGB2GRAY), cmap='gray')
+                    ax.set_title(f'Outlier of Image {image_number}')
+                    ax.set_axis_off()
+            # print("Outlier of Image {}".format(image_number))
         else :
             for j, ax in enumerate(axes.flatten()):
                 ax.imshow(clusters[i][j])
