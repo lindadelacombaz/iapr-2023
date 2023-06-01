@@ -386,9 +386,9 @@ def plot_clusters(image_number, labels, tiles_original):
             plt.show()
     return clusters
 
-def get_puzzle(img_sep):
+def get_puzzle(img_sep, img_idx, clu_idx): # HERE IF THERE ARE 2 CLUSTERS <9 TILES
     # put all the tiles in a single numpy array based on the size
-    num_rows = len(img_sep)
+    num_rows = len(img_sep) 
     num_cols = 1
     if len(img_sep) == 9:
         num_rows = num_cols = 3
@@ -399,10 +399,29 @@ def get_puzzle(img_sep):
         img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
     elif len(img_sep)==16:
         num_rows = num_cols = 4
-        # concatenate the tiles based on the number of rows and columns:
         img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
-    elif len(img_sep)>16:
+    elif len(img_sep) < 9:
+        print(f"Error in the number of tiles of cluster {clu_idx} of image {img_idx}. {len(img_sep)} tiles found. Black tiles will be added.")
+        num_rows = num_cols = 3
+        # add black blocks to img_sep to make it 9 tiles
+        print(img_sep[0].dtype)
+        img_sep = [img_sep[i] if i < len(img_sep) else np.zeros((128,128,3), dtype= np.uint8) for i in range(9)]
+        img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
+    elif len(img_sep) > 9 and len(img_sep)< 12:
+        print(f"Error in the number of tiles of cluster {clu_idx} of image {img_idx}. {len(img_sep)} tiles found. Black tiles will be added.")
         num_rows = 4
-        num_cols = len(img_sep)//4
+        num_cols = 3
+        # add black blocks to img_sep to make it 12 tiles
+        img_sep = [img_sep[i] if i < len(img_sep) else np.zeros((128,128,3), dtype= np.uint8) for i in range(12)]
+        img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
+    elif len(img_sep) > 12 and len(img_sep)< 16:
+        print(f"Error in the number of tiles of cluster {clu_idx} of image {img_idx}. {len(img_sep)} tiles found. Black tiles will be added.")
+        num_rows = num_cols = 4
+        # add black blocks to img_sep to make it 16 tiles
+        img_sep = [img_sep[i] if i < len(img_sep) else np.zeros((128,128,3), dtype= np.uint8) for i in range(16)]
+        img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
+    elif len(img_sep) > 16:
+        print("Error in the number of tiles. More than 16 tiles found. Image cropped to 16 tiles.")
+        num_rows = num_cols = 4
         img_sep = np.concatenate([np.concatenate(img_sep[i*num_cols:(i+1)*num_cols], axis=1) for i in range(num_rows)], axis=0)
     return img_sep
