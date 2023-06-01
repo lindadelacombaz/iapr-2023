@@ -163,8 +163,11 @@ def get_contours(img, mask):
     """
     #mask = cv2.cvtColor(mask, cv2.COLOR_RGB2GRAY)
     mask = mask
+    # Find the contours
     contours, hierarchy = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # Sort the contours
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    # If the contours area is bigger than 1000, keep it
     contours = [cnt for cnt in contours if cv2.contourArea(cnt) > 1000]
 
     final_contours = []
@@ -177,7 +180,7 @@ def get_contours(img, mask):
         x1, y2 = cnt[0][0] # top left corner
         approx = cv2.approxPolyDP(cnt, 0.09*cv2.arcLength(cnt, True), True) # approximates the contour with accuracy proportional to the contour perimeter
 
-        if len(approx) <= 5: # if the contour has 4 corners
+        if len(approx) <= 5: # if the contour has at least 4 corners
             rect = cv2.minAreaRect(cnt) # get the rectangle that encloses the contour
             (x, y), (w, h), a = rect # get the coordinates of the center, width, height, and angle of rotation of the rectangle
             ratio = float(w)/h # compute the ratio of the width to the height of the rectangle
@@ -214,9 +217,13 @@ def get_contours(img, mask):
 
 # Save the tiles from the folder "tiles":
 def save_tiles(image_index, folder_image = "train2", folder ="tiles", path = "data_project"):
+    # Load the image
     im = load_input_image(image_index, folder_image, path)
+    # Segment the image with Canny Edge Detection
     md = segment_image_canny(im)
+    # Apply Mathematical morphology
     res = apply_mat_morph(md)
+    # Obtain the contours
     _, _, _, tiles = get_contours(im, res)
     num_tiles = len(tiles)
     print("Number of tiles: {}".format(num_tiles))
@@ -245,15 +252,23 @@ def compute_gabor_feats(image, kernels):
     feats = np.zeros((len(kernels), 8), dtype=np.double)
     for k, kernel in enumerate(kernels):
         filtered = ndi.convolve(image, kernel, mode='wrap') # mode = 'wrap' to avoid border effects
+        # Mean
         feats[k, 0] = filtered.mean()
+        # Variance
         feats[k, 1] = filtered.var()
+        # Skewness
         feats[k, 2] = skew(filtered.flatten())
+        # Kurtosis
         feats[k, 3] = kurtosis(filtered.flatten())
+        # Max
         feats[k, 4] = filtered.max()
+        # Min
         feats[k, 5] = filtered.min()
+        # Standard deviation
         feats[k, 6] = filtered.std()
-        # Add power spectrum:
+        # Power spectrum:
         spectrum = np.abs(np.fft.fft2(filtered))
+        # Total power of the signal
         feats[k, 7] = np.sum(spectrum**2)
     return feats
 
