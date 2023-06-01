@@ -282,8 +282,8 @@ def dimensionality_reduction(feature_maps):
     # standardize the data:
     feature_maps = StandardScaler().fit_transform(feature_maps)
     # apply PCA and plot the Elbow method to choose the number of components:
-    pca = PCA()
-    pca.fit(feature_maps)
+    # pca = PCA()
+    # pca.fit(feature_maps)
     #plt.plot(np.cumsum(pca.explained_variance_ratio_))
     # plot the x where the cumulative explained variance is 70%:
     #plt.axvline(x=np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.7)+1, c='r')
@@ -293,16 +293,19 @@ def dimensionality_reduction(feature_maps):
     # print the number of components for which the cumulative explained variance is 70%:
     #print("Number of components for 70% variance: {}".format(np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.7)+1))
     # apply PCA with the chosen number of components:
-    n_components = np.argmax(np.cumsum(pca.explained_variance_ratio_) >= 0.7)+1
-    pca = PCA(n_components=n_components)
+    # print(np.cumsum(pca.explained_variance_ratio_))
+    # print(np.argmax(np.cumsum(pca.explained_variance_ratio_)>= 0.9))
+    # n_components = np.argmax(np.cumsum(pca.explained_variance_ratio_)>= 0.9)
+    pca = PCA(n_components=3)
     pca.fit(feature_maps)
     feature_maps = pca.transform(feature_maps)
     # plot the results:
-    #plt.figure(figsize=(5, 5))
-    #plt.scatter(feature_maps[:, 0], feature_maps[:, 1], s=10)
-    #plt.xlabel('PC1')
-    #plt.ylabel('PC2')
-    #plt.show()    
+    # plt.figure(figsize=(5, 5))
+    # plt.scatter(feature_maps[:, 0], feature_maps[:, 1], s=10)
+    # plt.xlabel('PC1')
+    # plt.ylabel('PC2')
+    # plt.show()    
+    
     return feature_maps
 
 """ CLUSTERING """
